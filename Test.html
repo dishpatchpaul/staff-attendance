@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Clock In / Out</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      background: #1a1a2e;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .logo-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #888;
+      margin-top: 0.2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+      margin-top: 1.25rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1.1rem;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      color: #111;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"]:focus {
+      border-color: #1a1a2e;
+    }
+
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+    }
+
+    .toggle-btn {
+      padding: 0.85rem;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fff;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: #444;
+      transition: all 0.15s;
+    }
+
+    .toggle-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn.selected-in {
+      background: #e8f5e9;
+      border-color: #2e7d32;
+      color: #1b5e20;
+    }
+
+    .toggle-btn.selected-out {
+      background: #fff3e0;
+      border-color: #e65100;
+      color: #bf360c;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 1.75rem;
+      padding: 0.9rem;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .feedback {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .feedback.success {
+      background: #e8f5e9;
+      color: #1b5e20;
+      display: block;
+    }
+
+    .feedback.error {
+      background: #ffebee;
+      color: #b71c1c;
+      display: block;
+    }
+
+    .timestamp {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-top: 1.5rem;
+    }
+
+    #clock {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 7 12 12 15 15"/>
+      </svg>
+    </div>
+    <h1>Staff Attendance</h1>
+    <p class="subtitle">Scan to record your time</p>
+  </div>
+
+  <label for="empId">Employee ID</label>
+  <input type="text" id="empId" placeholder="e.g. EMP001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+
+  <label>Action</label>
+  <div class="toggle-group">
+    <button class="toggle-btn" id="btn-in" onclick="selectAction('Clock In')">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Clock In
+    </button>
+    <button class="toggle-btn" id="btn-out" onclick="selectAction('Clock Out')">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Clock Out
+    </button>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitForm()" disabled>Submit</button>
+
+  <div class="feedback" id="feedback"></div>
+
+  <p class="timestamp">Current time: <span id="clock"></span></p>
+</div>
+
+<script>
+  // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxExGzSOHbEIn3vj8w8gqIY-GQtQTto-WZyptkoPAjveY2OAe-AzM4EpDA4yxWu2e-9ng/exec";
+
+  let selectedAction = null;
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById("clock").textContent = now.toLocaleTimeString("en-GB");
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function selectAction(action) {
+    selectedAction = action;
+    document.getElementById("btn-in").className = "toggle-btn" + (action === "Clock In" ? " selected-in" : "");
+    document.getElementById("btn-out").className = "toggle-btn" + (action === "Clock Out" ? " selected-out" : "");
+    checkReady();
+  }
+
+  document.getElementById("empId").addEventListener("input", checkReady);
+
+  function checkReady() {
+    const id = document.getElementById("empId").value.trim();
+    document.getElementById("submitBtn").disabled = !(id && selectedAction);
+  }
+
+  async function submitForm() {
+    const empId = document.getElementById("empId").value.trim().toUpperCase();
+    const btn = document.getElementById("submitBtn");
+    const feedback = document.getElementById("feedback");
+
+    if (!empId || !selectedAction) return;
+
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    feedback.className = "feedback";
+    feedback.textContent = "";
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employeeId: empId, action: selectedAction })
+      });
+
+      feedback.className = "feedback success";
+      feedback.textContent = `✓ ${selectedAction} recorded for ${empId}`;
+
+      // Reset form
+      document.getElementById("empId").value = "";
+      selectedAction = null;
+      document.getElementById("btn-in").className = "toggle-btn";
+      document.getElementById("btn-out").className = "toggle-btn";
+      btn.textContent = "Submit";
+
+    } catch (err) {
+      feedback.className = "feedback error";
+      feedback.textContent = "Something went wrong. Please try again.";
+      btn.disabled = false;
+      btn.textContent = "Submit";
+    }
+  }
+</script>
+
+</body>
+</html>
